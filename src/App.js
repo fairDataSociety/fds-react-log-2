@@ -4,10 +4,12 @@ import './App.css';
 import FDS from 'fds';
 
 window.FDS = new FDS({
+      domain: 'resolver.eth',
       swarmGateway: 'http://localhost:8500', 
       ethGateway: 'http://localhost:8545',
+      faucetAddress: 'http://localhost:3001/gimmie',
+      httpTimeout: 1000,      
       ensConfig: {
-        faucetAddress: 'http://localhost:3001/gimmie',
         domain: 'resolver.eth',
         registryAddress: '0x4916cf0632485bab3c396c96f09ec62f2a6d4084',
         fifsRegistrarContractAddress: '0x30555534c2a94d5b73cbfa3ac8adf8151fe23fd8',
@@ -164,13 +166,42 @@ let createAndStoreValue = ()=>{
   });
 }
 
+let createAndStoreEncryptedValue = ()=>{
+  let r1 = Math.floor(Math.random() * 10101);
+  let r2 = Math.floor(Math.random() * 10101);
+  let account1, account2 = null;
+  window.FDS.CreateAccount(`test${r1}`, 'test', console.log).then((account) => {
+    account1 = account;
+    console.log(`registered account 1 ${account1.subdomain}`);  
+  }).then(()=>{
+    return window.FDS.UnlockAccount(account1.subdomain, 'test').then((acc1)=>{
+      acc1.storeEncryptedValue('k1', 'hello encrypted value world').then((stored)=>{
+        console.log(`>>>> successfully stored ${stored} for ${acc1.subdomain}`);
+      });
+    })
+  }).then(()=>{
+    console.log(`window.FDS.UnlockAccount('${account1.subdomain}', 'test').then((acc2)=>{
+      acc2.retrieveDecryptedValue('k1').then(console.log)
+    })`)
+  });
+}
+
 simulateCreateTwoAndSend();
 // createAndStore();
 // createAndStoreValue();
+// createAndStoreEncryptedValue();
 // createAndBackup();
 // createDeleteAndRestore();
 
 
+
+// window.FDS.UnlockAccount('test7045', 'test').then((acc2)=>{
+//       acc2.messages().then((messages)=>{
+//         console.log('m', messages.length)
+//         messages[0].getFile().then(console.log)
+//         messages[0].saveAs();
+//       })
+//     })
 
 
 let r1 = Math.floor(Math.random() * 10101);
