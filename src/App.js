@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import logo from './logo.svg';
 import './App.css';
-import FDS from 'fds';
+import FDS from 'fds.js';
 
 // window.FDS = new FDS({
 //       // domain: 'resolver.eth',
