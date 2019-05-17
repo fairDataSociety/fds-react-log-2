@@ -18,64 +18,54 @@ import FDS from 'fds.js';
 //       }
 //     });
 
+window.FDS = new FDS();
 
-window.FDS = new FDS({
-      swarmGateway: 'http://209.97.190.111:8500', 
-      ethGateway: 'http://209.97.190.111:8545',
-      faucetAddress: 'https://dfaucet-testnet-dev.herokuapp.com/gimmie',
-      httpTimeout: 1000,
-      gasPrice: 50,
-      ensConfig: {
-        domain: 'datafund.eth',
-        registryAddress: '0x246d204ae4897e603b8cb498370dcbb2888213d1',
-        fifsRegistrarContractAddress: '0xbbcfe6ccee58d3ebc82dcd4d772b2484d23d0a0b',
-        resolverContractAddress: '0x79164c357f81627042d958533bba8a766c81f3d6'
-      }
-    });
+let simulateCreateTwoAndSendEncrypted = (setOutput, setResults)=>{
 
-
-let simulateCreateTwoAndSendTwo = ()=>{
-
-  let r1 = Math.floor(Math.random() * 1010101);
-  let r2 = Math.floor(Math.random() * 1010101);
+  let r1 = Math.floor(Math.random() * 101010101);
+  let r2 = Math.floor(Math.random() * 101010101);
   let account1, account2 = null;
-  window.FDS.CreateAccount(`test${r1}`, 'test', console.log).then((account) => {
+  window.FDS.CreateAccount(`test${r1}`, 'test', setOutput).then((account) => {
     account1 = account;
     console.log(`registered account 1 ${account1.subdomain}`);  
   }).then(() => {
-    return window.FDS.CreateAccount(`test${r2}`, 'test', console.log).then((account) => {
+    return window.FDS.CreateAccount(`test${r2}`, 'test', setOutput).then((account) => {
       account2 = account;
       console.log(`registered account 2 ${account2.subdomain}`);  
     }).catch(console.error)
   }).then(()=>{
     return window.FDS.UnlockAccount(account1.subdomain, 'test').then((acc1)=>{
-      let r = Math.floor(Math.random() * 10101);
+      let r = Math.floor(Math.random() * 1010101);
       let file = new File([`hello world ${r}`], `test${r}.txt`, {type: 'text/plain'});
-      return acc1.send(account2.subdomain, file, console.log, console.log, console.log).then((message)=>{
+      return acc1.send(account2.subdomain, file, setOutput, setOutput, setOutput).then((message)=>{
         console.log(`>>>> successfully sent ${message} to ${account2.subdomain}`);
       });
     })
   }).then(()=>{
-    console.log(`window.FDS.UnlockAccount('${account2.subdomain}', 'test').then((acc2)=>{
-      acc2.messages().then((messages)=>{
-        console.log('m', messages.length)
-        messages[0].getFile().then(console.log)
-        messages[0].saveAs();
-      })
-    })`)
-    console.log(`window.FDS.UnlockAccount('${account1.subdomain}', 'test').then((acc2)=>{
-      acc2.messages('sent').then((messages)=>{
-        console.log('m', messages.length)
-        messages[0].getFile().then(console.log)
-        messages[0].saveAs();
-      })
-    })`)
+    setResults(`simulateCreateTwoAndSendEncrypted went well, try...
+    `);
+    setResults(`window.FDS.UnlockAccount('${account2.subdomain}', 'test').then((acc2)=>{
+  acc2.messages().then((messages)=>{
+    console.log('m', messages.length)
+    messages[0].getFile().then(console.log)
+    messages[0].saveAs();
+  })
+})
+    `)
+    setResults(`window.FDS.UnlockAccount('${account1.subdomain}', 'test').then((acc2)=>{
+  acc2.messages('sent').then((messages)=>{
+    console.log('m', messages.length)
+    messages[0].getFile().then(console.log)
+    messages[0].saveAs();
+  })
+})
+    `)
     //todo check from sent mailbox too
   }).then(()=>{
     return window.FDS.UnlockAccount(account1.subdomain, 'test').then((acc1)=>{
-      let r = Math.floor(Math.random() * 10101);
+      let r = Math.floor(Math.random() * 1010101);
       let file = new File([`hello world 2${r}`], `test${r}-snd.txt`, {type: 'text/plain'});
-      acc1.send(account2.subdomain, file, console.log, console.log, console.log).then((message)=>{
+      acc1.send(account2.subdomain, file, setOutput, setOutput, setOutput).then((message)=>{
         console.log(`>>>> successfully sent ${message} to ${account2.subdomain}`);
       });
     })
@@ -83,63 +73,132 @@ let simulateCreateTwoAndSendTwo = ()=>{
 
 }
 
-let createAndStore = ()=>{
 
-  let r1 = Math.floor(Math.random() * 10101);
-  let r2 = Math.floor(Math.random() * 10101);
+
+let simulateCreateTwoSubdomainsAndSendUnencrypted = (setOutput, setResults)=>{
+
+  let r1 = Math.floor(Math.random() * 101010101);
+  let r2 = Math.floor(Math.random() * 101010101);
   let account1, account2 = null;
-  window.FDS.CreateAccount(`test${r1}`, 'test', console.log).then((account) => {
+  window.FDS.CreateAccount(`test${r1}`, 'test', setOutput).then((account) => {
     account1 = account;
     console.log(`registered account 1 ${account1.subdomain}`);  
+  })
+  .then(() => {
+    return window.FDS.CreateAccount(`test${r2}`, 'test', setOutput).then((account) => {
+      account2 = account;
+      console.log(`registered account 2 ${account2.subdomain}`);  
+    }).catch(console.error)
+  }).then(()=>{
+    return window.FDS.UnlockAccount(account2.subdomain, 'test').then((acc2)=>{
+      let r = Math.floor(Math.random() * 1010101);
+      let file = new File([`hello world ${r}`], `test${r}.txt`, {type: 'text/plain'});
+      return acc2.sendUnencrypted(account1.subdomain, file, setOutput, setOutput, setOutput).then((message)=>{
+        console.log(`>>>> successfully sent ${message} to ${account1.subdomain}`);
+      });
+    })
+  })
+.then(()=>{
+    return window.FDS.UnlockAccount(account1.subdomain, 'test').then((acc1)=>{
+      let r = Math.floor(Math.random() * 1010101);
+      let file = new File([`hello world 2${r}`], `test${r}-snd.txt`, {type: 'text/plain'});
+      acc1.sendUnencrypted(account2.subdomain, file, setOutput, setOutput, setOutput).then((message)=>{
+        console.log(`>>>> successfully sent ${message} to ${account2.subdomain}`);
+      });
+    })
+  }).then(()=>{
+    setResults(`simulateCreateTwoAndSendUnencrypted went well, try...
+    `);
+
+    setResults(`window.FDS.UnlockAccount('${account2.subdomain}', 'test').then((acc2)=>{
+  acc2.messages('sentUnencrypted').then((messages)=>{
+    console.log('m', messages.length)
+    // messages[0].getUnencryptedFile().then(console.log)
+    // messages[0].saveAs();
+  })
+})
+    `)
+
+    setResults(`window.FDS.UnlockAccount('${account1.subdomain}', 'test').then((acc2)=>{
+  acc2.messages('sentUnencrypted').then((messages)=>{
+    console.log('m', messages.length)
+    // messages[0].getUnencryptedFile().then(console.log)
+    // messages[0].saveAs();
+  })
+})
+    `)
+
+    setResults(`
+window.FDS.GetUnencryptedMessages('${account1.subdomain}').then(console.log);
+`)
+    setResults(`
+window.FDS.GetUnencryptedMessages('${account2.subdomain}').then(console.log);
+`)
+    //todo check from sent mailbox too
+  })
+
+}
+
+let createAndStore = (setOutput, setResults)=>{
+
+  let r1 = Math.floor(Math.random() * 1010101);
+  let r2 = Math.floor(Math.random() * 1010101);
+  let account1, account2 = null;
+  window.FDS.CreateAccount(`test${r1}`, 'test', setOutput).then((account) => {
+    account1 = account;
+    setOutput(`registered account 1 ${account1.subdomain}`);  
   }).then(()=>{
     return window.FDS.UnlockAccount(account1.subdomain, 'test').then((acc1)=>{
-      let r = Math.floor(Math.random() * 10101);
+      let r = Math.floor(Math.random() * 1010101);
       let file = new File(['hello storage world'], `test${r}.txt`, {type: 'text/plain'});
       acc1.store(file, console.log, console.log, console.log).then((stored)=>{
         console.log(`>>>> successfully stored ${stored} for ${acc1.subdomain}`);
       });
     })
   }).then(()=>{
-    console.log(`window.FDS.UnlockAccount('${account1.subdomain}', 'test').then((acc2)=>{
-      acc2.stored().then((stored)=>{
-        console.log('m', stored.length)
-        stored[0].getFile().then(console.log)
-        stored[0].saveAs();
-      })
-    })`)
+    setResults(`
+    createAndStore went well, try....
+
+window.FDS.UnlockAccount('${account1.subdomain}', 'test').then((acc2)=>{
+  acc2.stored().then((stored)=>{
+    console.log('m', stored.length)
+    stored[0].getFile().then(console.log)
+    stored[0].saveAs();
+  })
+})`)
   });
 
 }
 
-let createAndBackup = ()=>{
-
-  let r1 = Math.floor(Math.random() * 10101);
-  let r2 = Math.floor(Math.random() * 10101);
+let createAndBackup = (setOutput, setResults)=>{
+  let r1 = Math.floor(Math.random() * 1010101);
+  let r2 = Math.floor(Math.random() * 1010101);
   let account1, account2 = null;
-  window.FDS.CreateAccount(`test${r1}`, 'test', console.log).then((account) => {
+  window.FDS.CreateAccount(`test${r1}`, 'test', setOutput).then((account) => {
     account1 = account;
-    console.log(`registered account 1 ${account1.subdomain}`);  
+    setResults(`registered account 1 ${account1.subdomain}`);  
   }).then(()=>{
     return window.FDS.BackupAccount(account1.subdomain, 'test');
+  }).then(()=>{
+    setResults(`createAndBackup went well, backup should have been downloaded`)
   });
 
 }
 
 let backupJSON = null;
 
-let createDeleteAndRestore = ()=>{
-
-  let r1 = Math.floor(Math.random() * 10101);
-  let r2 = Math.floor(Math.random() * 10101);
+let createDeleteAndRestore = (setOutput, setResults)=>{
+  let r1 = Math.floor(Math.random() * 1010101);
+  let r2 = Math.floor(Math.random() * 1010101);
   let account1, account2 = null;
-  window.FDS.CreateAccount(`test${r1}`, 'test', console.log).then((account) => {
+  window.FDS.CreateAccount(`test${r1}`, 'test', setOutput).then((account) => {
     account1 = account;
-    console.log(`registered account 1 ${account1.subdomain}`);  
+    setOutput(`registered account 1 ${account1.subdomain}`);  
   }).then(()=>{
     let accounts = window.FDS.GetAccounts();
     let f = accounts.filter((a)=>{return a.subdomain === account1.subdomain});
     if(f.length === 1){
-      console.log(`success: account ${account1.subdomain} exists`);
+      setOutput(`success: account ${account1.subdomain} exists`);
       backupJSON = JSON.stringify(accounts[0].wallet);
     }else{
       throw new Error(`account ${account1.subdomain} does not exist`)
@@ -149,7 +208,7 @@ let createDeleteAndRestore = ()=>{
     let accounts = window.FDS.GetAccounts();
     let f = accounts.filter((a)=>{return a.subdomain === account1.subdomain});
     if(f.length === 0){
-      console.log(`success: account ${account1.subdomain} does not exist`)
+      setOutput(`success: account ${account1.subdomain} does not exist`)
     }else{
       throw new Error(`account ${account1.subdomain} exists`)
     }
@@ -159,10 +218,14 @@ let createDeleteAndRestore = ()=>{
       let accounts = window.FDS.GetAccounts();
       let f = accounts.filter((a)=>{return a.subdomain === account1.subdomain});
       if(f.length === 1){
-        console.log(`success: account ${account1.subdomain} exists`)
+        setOutput(`success: account ${account1.subdomain} exists`)
       }else{
         throw new Error(`account ${account1.subdomain} does not exist`)
       }    
+    }).then(()=>{
+      setResults(`
+        createDeleteAndRestore went well, file should have downloaded
+      `);
     });
     //todo check you can send to/from and store
   }).catch(console.error);
@@ -171,47 +234,49 @@ let createDeleteAndRestore = ()=>{
 
 
 
-let createAndStoreValue = ()=>{
-  let r1 = Math.floor(Math.random() * 10101);
-  let r2 = Math.floor(Math.random() * 10101);
+let createAndStoreValue = (setOutput, setResults) => {
+  let r1 = Math.floor(Math.random() * 1010101);
+  let r2 = Math.floor(Math.random() * 1010101);
   let account1, account2 = null;
   window.FDS.CreateAccount(`test${r1}`, 'test', console.log).then((account) => {
     account1 = account;
-    console.log(`registered account 1 ${account1.subdomain}`);  
+    setOutput(`registered account 1 ${account1.subdomain}`);  
   }).then(()=>{
     return window.FDS.UnlockAccount(account1.subdomain, 'test').then((acc1)=>{
       acc1.storeValue('k1', 'hello value world').then((stored)=>{
-        console.log(`>>>> successfully stored ${stored} for ${acc1.subdomain}`);
+        setOutput(`>>>> successfully stored ${stored} for ${acc1.subdomain}`);
       });
     })
   }).then(()=>{
-    console.log(`window.FDS.UnlockAccount('${account1.subdomain}', 'test').then((acc2)=>{
-      acc2.retrieveValue('k1').then(console.log)
-    })`)
+    setResults(`
+createAndStoreValue went well, try...
+window.FDS.UnlockAccount('${account1.subdomain}', 'test').then((acc2)=>{
+  acc2.retrieveValue('k1').then(console.log)
+})`)
   });
 }
 
-let createAndStoreEncryptedValue = ()=>{
-  let r1 = Math.floor(Math.random() * 10101);
-  let r2 = Math.floor(Math.random() * 10101);
+let createAndStoreEncryptedValue = (setOutput, setResults)=>{
+  let r1 = Math.floor(Math.random() * 1010101);
+  let r2 = Math.floor(Math.random() * 1010101);
   let account1, account2 = null;
   window.FDS.CreateAccount(`test${r1}`, 'test', console.log).then((account) => {
     account1 = account;
-    console.log(`registered account 1 ${account1.subdomain}`);  
+    setOutput(`registered account 1 ${account1.subdomain}`);  
   }).then(()=>{
     return window.FDS.UnlockAccount(account1.subdomain, 'test').then((acc1)=>{
       acc1.storeEncryptedValue('k1', 'hello encrypted value world').then((stored)=>{
-        console.log(`>>>> successfully stored ${stored} for ${acc1.subdomain}`);
+        setOutput(`>>>> successfully stored ${stored} for ${acc1.subdomain}`);
       });
     })
   }).then(()=>{
-    console.log(`window.FDS.UnlockAccount('${account1.subdomain}', 'test').then((acc2)=>{
-      acc2.retrieveDecryptedValue('k1').then(console.log)
-    })`)
+    setResults(`window.FDS.UnlockAccount('${account1.subdomain}', 'test').then((acc2)=>{
+  acc2.retrieveDecryptedValue('k1').then(console.log)
+})`)
   });
 }
 
-simulateCreateTwoAndSendTwo();
+// simulateCreateTwoAndSendTwo(callback);
 // createAndStore();
 // createAndStoreValue();
 // createAndStoreEncryptedValue();
@@ -229,28 +294,105 @@ simulateCreateTwoAndSendTwo();
 //     })
 
 
-let r1 = Math.floor(Math.random() * 10101);
+let r1 = Math.floor(Math.random() * 1010101);
 
 // window.FDS.CreateAccount(`test${r1}`, 'test', console.log)
 
 class App extends Component {
+
+  constructor(props) {
+    super(props);
+    this.state = {
+      completed: 0,
+      output: "",
+      results: ""
+    }
+
+
+
+    simulateCreateTwoAndSendEncrypted(
+      (output)=>{
+        this.setOutput(output, this);
+      },
+      (results)=>{
+        this.setResults(results, this);
+      }
+    );
+
+    simulateCreateTwoSubdomainsAndSendUnencrypted(
+      (output)=>{
+        this.setOutput(output, this);
+      },
+      (results)=>{
+        this.setResults(results, this);
+      }
+    );    
+
+    createAndStore(
+      (output)=>{
+        this.setOutput(output, this);
+      },
+      (results)=>{
+        this.setResults(results, this);
+      }
+    );
+    createAndStoreValue(
+      (output)=>{
+        this.setOutput(output, this);
+      },
+      (results)=>{
+        this.setResults(results, this);
+      }
+    );
+    createAndStoreEncryptedValue(
+      (output)=>{
+        this.setOutput(output, this);
+      },
+      (results)=>{
+        this.setResults(results, this);
+      }
+    );
+    createAndBackup(
+      (output)=>{
+        this.setOutput(output, this);
+      },
+      (results)=>{
+        this.setResults(results, this);
+      }
+    );
+    createDeleteAndRestore(
+      (output)=>{
+        this.setOutput(output, this);
+      },
+      (results)=>{
+        this.setResults(results, this);
+      }
+    );
+
+
+
+
+  }
+
+  setOutput(output, context){
+    context.setState({
+      output: this.state.output + '\n' + output
+    });
+  }
+
+  setResults(results, context){
+    context.setState({
+      completed: this.state.completed + 1,
+      results: this.state.results + '\n' + results
+    });
+  }  
+
   render() {
     return (
       <div className="App">
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <p>
-            Edit <code>src/App.js</code> and save to reload.
-          </p>
-          <a
-            className="App-link"
-            href="https://reactjs.org"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Learn React
-          </a>
-        </header>
+        <pre>{this.state.completed}</pre>
+        <pre>{this.state.results}</pre>
+        <pre>{this.state.output}</pre>
       </div>
     );
   }

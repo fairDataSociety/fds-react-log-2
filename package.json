@@ -22,7 +22,5 @@
     "not ie <= 11",
     "not op_mini all"
   ],
-  "devDependencies": {
-    "fds.js": "0.0.12"
-  }
+  "devDependencies": {}
 }
