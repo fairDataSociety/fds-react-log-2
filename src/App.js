@@ -18,15 +18,33 @@ import FDS from 'fds.js';
 //       }
 //     });
 
-window.FDS = new FDS();
+window.FDS = new FDS(
+{
+  applicationDomain : "/shared/fairdrop/",
+  swarmGateway: 'https://swarm.fairdatasociety.org', 
+  ethGateway: 'https://geth-noordung.fairdatasociety.org',
+  faucetAddress: 'https://dfaucet-testnet-prod.herokuapp.com/gimmie',
+  httpTimeout: 1000,
+  gasPrice: 0.1, //gwei    
+  ensConfig: {
+    domain: 'datafund.eth',
+    registryAddress: '0xc11f4427a0261e5ca508c982e747851e29c48e83',
+    fifsRegistrarContractAddress: '0x01591702cb0c1d03b15355b2fab5e6483b6db9a7',
+    resolverContractAddress: '0xf70816e998819443d5506f129ef1fa9f9c6ff5a7'
+  }
+}
+);
 
 let simulateCreateTwoAndSendEncrypted = (setOutput, setResults)=>{
 
   let r1 = Math.floor(Math.random() * 101010101);
   let r2 = Math.floor(Math.random() * 101010101);
   let account1, account2 = null;
-  window.FDS.CreateAccount(`test${r1}`, 'test', setOutput).then((account) => {
+  window.FDS.CreateAccount(`test${r1}`, 'test', setOutput).then(async (account) => {
     account1 = account;
+    var multiboxData = await account.Mail.Multibox.traverseMultibox(account, account.subdomain);
+    let applicationNodeExists = await account.Mail.Multibox.createPath(account, '/shared/fairdrop', multiboxData.id);
+
     console.log(`registered account 1 ${account1.subdomain}`);  
   }).then(() => {
     return window.FDS.CreateAccount(`test${r2}`, 'test', setOutput).then((account) => {
@@ -37,7 +55,8 @@ let simulateCreateTwoAndSendEncrypted = (setOutput, setResults)=>{
     return window.FDS.UnlockAccount(account1.subdomain, 'test').then((acc1)=>{
       let r = Math.floor(Math.random() * 1010101);
       let file = new File([`hello world ${r}`], `test${r}.txt`, {type: 'text/plain'});
-      return acc1.send(account2.subdomain, file, setOutput, setOutput, setOutput).then((message)=>{
+      acc1.setApplicationDomain('/shared/fairdrop');
+      return acc1.send(account2.subdomain, file, '/shared/fairdrop', setOutput, setOutput, setOutput).then((message)=>{
         console.log(`>>>> successfully sent ${message} to ${account2.subdomain}`);
       });
     })
@@ -45,7 +64,7 @@ let simulateCreateTwoAndSendEncrypted = (setOutput, setResults)=>{
     setResults(`simulateCreateTwoAndSendEncrypted went well, try...
     `);
     setResults(`window.FDS.UnlockAccount('${account2.subdomain}', 'test').then((acc2)=>{
-  acc2.messages().then((messages)=>{
+  acc2.messages('received','/shared/fairdrop').then((messages)=>{
     console.log('m', messages.length)
     messages[0].getFile().then(console.log)
     messages[0].saveAs();
@@ -53,7 +72,7 @@ let simulateCreateTwoAndSendEncrypted = (setOutput, setResults)=>{
 })
     `)
     setResults(`window.FDS.UnlockAccount('${account1.subdomain}', 'test').then((acc2)=>{
-  acc2.messages('sent').then((messages)=>{
+  acc2.messages('sent','/shared/fairdrop').then((messages)=>{
     console.log('m', messages.length)
     messages[0].getFile().then(console.log)
     messages[0].saveAs();
@@ -61,15 +80,16 @@ let simulateCreateTwoAndSendEncrypted = (setOutput, setResults)=>{
 })
     `)
     //todo check from sent mailbox too
-  }).then(()=>{
-    return window.FDS.UnlockAccount(account1.subdomain, 'test').then((acc1)=>{
-      let r = Math.floor(Math.random() * 1010101);
-      let file = new File([`hello world 2${r}`], `test${r}-snd.txt`, {type: 'text/plain'});
-      acc1.send(account2.subdomain, file, setOutput, setOutput, setOutput).then((message)=>{
-        console.log(`>>>> successfully sent ${message} to ${account2.subdomain}`);
-      });
-    })
-  });
+  })
+  // .then(()=>{
+  //   return window.FDS.UnlockAccount(account1.subdomain, 'test').then((acc1)=>{
+  //     let r = Math.floor(Math.random() * 1010101);
+  //     let file = new File([`hello world 2${r}`], `test${r}-snd.txt`, {type: 'text/plain'});
+  //     acc1.send(account2.subdomain, file, setOutput, setOutput, setOutput).then((message)=>{
+  //       console.log(`>>>> successfully sent ${message} to ${account2.subdomain}`);
+  //     });
+  //   })
+  // });
 
 }
 
@@ -319,55 +339,55 @@ class App extends Component {
       }
     );
 
-    simulateCreateTwoSubdomainsAndSendUnencrypted(
-      (output)=>{
-        this.setOutput(output, this);
-      },
-      (results)=>{
-        this.setResults(results, this);
-      }
-    );    
+    // simulateCreateTwoSubdomainsAndSendUnencrypted(
+    //   (output)=>{
+    //     this.setOutput(output, this);
+    //   },
+    //   (results)=>{
+    //     this.setResults(results, this);
+    //   }
+    // );    
 
-    createAndStore(
-      (output)=>{
-        this.setOutput(output, this);
-      },
-      (results)=>{
-        this.setResults(results, this);
-      }
-    );
-    createAndStoreValue(
-      (output)=>{
-        this.setOutput(output, this);
-      },
-      (results)=>{
-        this.setResults(results, this);
-      }
-    );
-    createAndStoreEncryptedValue(
-      (output)=>{
-        this.setOutput(output, this);
-      },
-      (results)=>{
-        this.setResults(results, this);
-      }
-    );
-    createAndBackup(
-      (output)=>{
-        this.setOutput(output, this);
-      },
-      (results)=>{
-        this.setResults(results, this);
-      }
-    );
-    createDeleteAndRestore(
-      (output)=>{
-        this.setOutput(output, this);
-      },
-      (results)=>{
-        this.setResults(results, this);
-      }
-    );
+    // createAndStore(
+    //   (output)=>{
+    //     this.setOutput(output, this);
+    //   },
+    //   (results)=>{
+    //     this.setResults(results, this);
+    //   }
+    // );
+    // createAndStoreValue(
+    //   (output)=>{
+    //     this.setOutput(output, this);
+    //   },
+    //   (results)=>{
+    //     this.setResults(results, this);
+    //   }
+    // );
+    // createAndStoreEncryptedValue(
+    //   (output)=>{
+    //     this.setOutput(output, this);
+    //   },
+    //   (results)=>{
+    //     this.setResults(results, this);
+    //   }
+    // );
+    // createAndBackup(
+    //   (output)=>{
+    //     this.setOutput(output, this);
+    //   },
+    //   (results)=>{
+    //     this.setResults(results, this);
+    //   }
+    // );
+    // createDeleteAndRestore(
+    //   (output)=>{
+    //     this.setOutput(output, this);
+    //   },
+    //   (results)=>{
+    //     this.setResults(results, this);
+    //   }
+    // );
 
 
 
