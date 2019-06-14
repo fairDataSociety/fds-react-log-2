@@ -3,6 +3,9 @@ import logo from './logo.svg';
 import './App.css';
 import FDS from 'fds';
 
+import ConsentManager from './contracts/ConsentManager.json';
+import Metacoin from './contracts/Metacoin.json';
+
 window.FDS = new FDS({
     swarmGateway: 'https://swarm.fairdatasociety.org',
     ethGateway: 'https://geth-noordung-2.fairdatasociety.org',
@@ -123,6 +126,92 @@ async function twoAccountsSendingToEachOther(setOutput, setResults) {
     console.log(messages2);
 }
 
+
+let createAndDeployContract = (setOutput, setResults)=>{
+  let r1 = Math.floor(Math.random() * 1010101);
+  let r2 = Math.floor(Math.random() * 1010101);
+  let account1, account2 = null;
+  window.FDS.CreateAccount(`test${r1}`, 'test', console.log).then((account) => {
+    account1 = account;
+    setOutput(`registered account 1 ${account1.subdomain}`);  
+  }).then(()=>{
+    return window.FDS.UnlockAccount(`test${r1}`, 'test').then((acc1)=>{
+      // console.log(ConsentManager);
+      return acc1.deployContract(ConsentManager.abi, ConsentManager.bytecode);
+    }).then((contract)=>{
+      console.log('x',contract);
+    })
+  })
+}
+
+let createAndRetrieveContract = (setOutput, setResults)=>{
+  let r1 = Math.floor(Math.random() * 1010101);
+  let r2 = Math.floor(Math.random() * 1010101);
+  let account1, account2 = null;
+  let contract;
+  window.FDS.CreateAccount(`test${r1}`, 'test', console.log).then((account) => {
+    account1 = account;
+    setOutput(`registered account 1 ${account1.subdomain}`);  
+  }).then(()=>{
+    return window.FDS.UnlockAccount(`test${r1}`, 'test').then((acc1)=>{
+      // console.log(ConsentManager);
+      account1 = acc1;
+      return acc1.getContract(ConsentManager.abi, ConsentManager.bytecode, '0x82ED9dC2d5748Dd23A47e26811aeEF43174D6DB8');
+    }).then(async (c) =>{
+      contract = c
+      window.contract = contract;
+      return contract.send('createConsent', ['0x'+account1.wallet.address, '0x6a208021508e3a77ae1517bb8bfa4dbf8a05517a', '0xc016ed5d54e357cb4a7460cb1b13b3f499dc4f428453fec21613e9339faaeb3f']);
+    }).then(async () =>{
+      return contract.call('getUserConsents');
+    }).then(console.log)
+  })
+}
+
+
+
+
+
+
+
+let createAndDeployMetacoin = (setOutput, setResults)=>{
+  let r1 = Math.floor(Math.random() * 1010101);
+  let r2 = Math.floor(Math.random() * 1010101);
+  let account1, account2 = null;
+  window.FDS.CreateAccount(`test${r1}`, 'test', console.log).then((account) => {
+    account1 = account;
+    setOutput(`registered account 1 ${account1.subdomain}`);  
+  }).then(()=>{
+    return window.FDS.UnlockAccount(`test${r1}`, 'test').then((acc1)=>{
+      let contract = acc1.deployContract(Metacoin.abi, Metacoin.bytecode, [98], null, 25000000);
+      return contract;
+    }).then((contract)=>{
+      contract.call('vers').then(console.log)
+    })
+  })
+}
+
+
+let createAndRetrieveMetacoin = (setOutput, setResults)=>{
+  let r1 = Math.floor(Math.random() * 1010101);
+  let r2 = Math.floor(Math.random() * 1010101);
+  let account1, account2 = null;
+  window.FDS.CreateAccount(`test${r1}`, 'test', console.log).then((account) => {
+    account1 = account;
+    setOutput(`registered account 1 ${account1.subdomain}`);  
+  }).then(()=>{
+    return window.FDS.UnlockAccount(`test${r1}`, 'test').then((acc1)=>{
+      // console.log(ConsentManager);
+      account1 = acc1;
+      return acc1.getContract(Metacoin.abi, Metacoin.bytecode, "0x8183e6C5fE1C0c283918858f094330959bEE5B9C");
+    }).then((contract)=>{
+      contract.call('getBalance', [account1.address]).then(console.log);
+      // let tx = await cm.createConsent(accounts[0], accounts[1], swarmHash1, {from: accounts[0]});
+    })
+  })
+}
+
+
+
 class App extends Component {
 
   constructor(props) {
@@ -133,14 +222,52 @@ class App extends Component {
       results: ""
       }
 
-      twoAccountsSendingToEachOther(
-          (output) => {
-              this.setOutput(output, this);
-          },
-          (results) => {
-              this.setResults(results, this);
-          }
-      );
+    createAndDeployContract(
+      (output)=>{
+        this.setOutput(output, this);
+      },
+      (results)=>{
+        this.setResults(results, this);
+      }
+    );
+
+    createAndRetrieveContract(
+      (output)=>{
+        this.setOutput(output, this);
+      },
+      (results)=>{
+        this.setResults(results, this);
+      }      
+    );
+
+    twoAccountsSendingToEachOther(
+        (output) => {
+            this.setOutput(output, this);
+        },
+        (results) => {
+            this.setResults(results, this);
+        }
+    );
+
+    createAndDeployMetacoin(
+      (output)=>{
+        this.setOutput(output, this);
+      },
+      (results)=>{
+        this.setResults(results, this);
+      }
+    );
+
+    createAndRetrieveMetacoin(
+      (output)=>{
+        this.setOutput(output, this);
+      },
+      (results)=>{
+        this.setResults(results, this);
+      }
+    );
+
+
   }
 
   setOutput(output, context){
