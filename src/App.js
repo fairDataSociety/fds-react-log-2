@@ -214,14 +214,14 @@ class App extends Component {
       results: ""
       }
 
-      twoAccountsSendingToEachOther(
-          (output) => {
-              this.setOutput(output, this);
-          },
-          (results) => {
-              this.setResults(results, this);
-          }
-      );
+      // twoAccountsSendingToEachOther(
+      //     (output) => {
+      //         this.setOutput(output, this);
+      //     },
+      //     (results) => {
+      //         this.setResults(results, this);
+      //     }
+      // );
 
       createAndSignTwiceConsent(
         (output)=>{
