@@ -3,6 +3,9 @@ import logo from './logo.svg';
 import './App.css';
 import FDS from 'fds';
 
+import Consent from './lib/Consent.js';
+import ConsentManager from './lib/ConsentManager.js';
+
 window.FDS = new FDS({
     swarmGateway: 'https://swarm.fairdatasociety.org',
     ethGateway: 'https://geth-noordung-2.fairdatasociety.org',
@@ -123,6 +126,84 @@ async function twoAccountsSendingToEachOther(setOutput, setResults) {
     console.log(messages2);
 }
 
+
+
+async function createAndSignTwiceConsent(setOutput, setResults){
+  let applicationDomain = "/shared/fairdrop/"; 
+
+  let account1 = await createRandomAccount(setOutput, setResults); 
+  await initAccount(account1, applicationDomain, setOutput, setResults);
+  let account2 = await createRandomAccount(setOutput, setResults); 
+  await initAccount(account1, applicationDomain, setOutput, setResults);
+
+  let swarmHash = '0xc016ed5d54e357cb4a7460cb1b13b3f499dc4f428453fec21613e9339faaeb3e';
+  let userAddress = account1.wallet.address;
+  let subjectAddress = account2.wallet.address;
+
+  let CM1 = new ConsentManager(account1);
+  let tx = await CM1.createConsent(userAddress, subjectAddress, swarmHash);
+
+  console.log('created consent');
+
+  let uc = await CM1.getUserConsents();
+
+  let CM2 = new ConsentManager(account2);
+
+  console.log('user consents acc1', uc);
+
+  let sc = await CM2.getSubjectConsents();
+
+  console.log('subject consents for acc2', sc);
+
+  let cf = await CM2.getConsentsFor(swarmHash);
+
+  console.log('consents for swarmHash', cf);
+
+  let con  = await new Consent(account1, uc[0], swarmHash);
+  let us, ss, s, v;
+
+  us = await con.isUserSigned();
+  ss = await con.isSubjectSigned();
+  s = await con.isSigned();
+
+  console.log('signed (subject, user, both)', ss, us, s);
+
+  //must create consent with unlocked account context
+  let conAcc1  = await new Consent(account1, uc[0], swarmHash);
+
+  console.log('signing for user using acc1');
+  await conAcc1.signUser();
+
+  us = await conAcc1.isUserSigned();
+  ss = await conAcc1.isSubjectSigned();
+  s = await conAcc1.isSigned();
+  console.log('signed (subject, user, both)', ss, us, s);
+
+  //must create consent with unlocked account context
+  let conAcc2  = await new Consent(account2, sc[0], swarmHash);
+
+  console.log('signing for subject using acc2');  
+  await conAcc2.signSubject();
+
+  us = await conAcc2.isUserSigned();
+  ss = await conAcc2.isSubjectSigned();
+  s = await conAcc2.isSigned();
+  console.log('signed (subject, user, both)', ss, us, s);
+
+  v = await conAcc2.isValid();
+
+  console.log('consent validity', v);
+
+  console.log('revoking consent');
+  await conAcc2.revokeConsent();
+
+  v = await conAcc2.isValid();
+
+  console.log('consent validity', v);
+
+}
+
+
 class App extends Component {
 
   constructor(props) {
@@ -140,6 +221,15 @@ class App extends Component {
           (results) => {
               this.setResults(results, this);
           }
+      );
+
+      createAndSignTwiceConsent(
+        (output)=>{
+          this.setOutput(output, this);
+        },
+        (results)=>{
+          this.setResults(results, this);
+        }
       );
   }
 
