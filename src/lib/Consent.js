@@ -50,44 +50,56 @@ class Consent {
       }     
     }
 
-    dataUser(){
-      return this.con.call('dataUser', []);
+    async getSwarmHash() {
+        this.swarmHash = await this.con.call('swarmHash', []);
+        return this.swarmHash;
     }
 
-    signUser(){
+    async dataUser(){
+        return await this.con.call('dataUser', []);
+    }
+
+    async signUser(){
       let sig = this.sign();      
-      return this.con.send('signUser',[sig.h, sig.v, sig.r, sig.s]);
+        return await this.con.send('signUser',[sig.h, sig.v, sig.r, sig.s]);
     }
 
-    dataSubject(){
-      return this.con.call('dataSubject', []);
+    async dataSubject(){
+        return await this.con.call('dataSubject', []);
     }
 
-    signSubject(){
+    async signSubject(){
       let sig = this.sign();
-      return this.con.send('signSubject',[sig.h, sig.v, sig.r, sig.s]);
+        return await this.con.send('signSubject',[sig.h, sig.v, sig.r, sig.s]);
     }  
 
-    isUserSigned(){
-      return this.con.call('isUserSigned', []);
+    async isUserSigned(){
+        return await  this.con.call('isUserSigned', []);
     }
 
-    isSubjectSigned(){
-      return this.con.call('isSubjectSigned', []);
+    async isSubjectSigned(){
+        return await this.con.call('isSubjectSigned', []);
     }
 
-    isSigned(){
-      return this.con.call('isSigned', []);
+    async isSigned(){
+        return await this.con.call('isSigned', []);
     }
 
-    isValid(){
-      return this.con.call('isValid', []);
+    async isValid(){
+        return await this.con.call('isValid', []);
     }
 
-    revokeConsent(){
-      return this.con.send('revokeConsent', []);
+    async revokeConsent(){
+      return await this.con.send('revokeConsent', []);
     }
 
+    async isUpdatedWith() {
+        return await this.con.call('updatedConsent', []);
+    }
+
+    async status() {
+        return await this.con.call('status', []);
+    }
 }
 
 export default Consent
