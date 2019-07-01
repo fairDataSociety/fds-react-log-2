@@ -15,15 +15,16 @@
 // along with the FairDataSociety library. If not, see <http://www.gnu.org/licenses/>.
 
 
-let Web3Utils = require('web3-utils');
+//let Web3Utils = require('web3-utils');
+
+import Consent from "./Consent.js"
 
 let ConsentManagerContract = require('../contracts/ConsentManager.json');
-
 
 class ConsentManager {
 
     constructor(FDSAccount) {
-        let contractAddress = '0xdF5d8942342a06EF0ddC46E564a7963DF71eA23B';
+        let contractAddress = '0xB57caE1557420Ed7bD4Dc9647a6e51c509F81893'; 
         this.account = FDSAccount;
         this.cm = FDSAccount.getContract(ConsentManagerContract.abi, ConsentManagerContract.bytecode, contractAddress);
     }
@@ -31,6 +32,13 @@ class ConsentManager {
     // create a consent
     createConsent(userAddress, subjectAddress, swarmHash){
       return this.cm.send('createConsent', [userAddress, subjectAddress, swarmHash]);
+    }
+
+    
+    async getConsentAt(consentContractAddress) {
+        let consentObject = await new Consent(this.account, consentContractAddress, "0x0");
+        //let consent = await this.account.getContract(ConsentContract.abi, ConsentContract.bytecode, consentContractAddress);
+        return consentObject;
     }
 
     // get user consents
@@ -50,7 +58,7 @@ class ConsentManager {
 
     // update existing consents with new location
     updateConsent(consentAddress, swarmHash){
-      return this.cm.call('updateConsent', [consentAddress, swarmHash]);
+       return this.cm.send('updateConsent', [consentAddress, swarmHash]);
     }
 
 }
