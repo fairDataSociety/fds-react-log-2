@@ -1,3 +1,5 @@
+REPO IS NOT MAINTANED - ARCHIVING AS READ ONLY
+
 # FDS-React-Log
 
 A quick and dirty project used to develop and test FDS.js, pending something more appropriate!
